@@ -34,11 +34,25 @@ camera.position.set(50, 50, 0);
 //camera.lookAt(0,0,0);
 
 //var ambient = new THREE.AmbientLight( 0x404040);
-var ambient = new THREE.DirectionalLight(0xffffee, 0.7);
+var ambient = new THREE.AmbientLight(0xcccccc, 0.4);
 scene.add(ambient)
 
 
-
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
+dirLight.position.set(1, 10, - 1);
+dirLight.matrixAutoUpdate = false;
+dirLight.updateMatrix();
+dirLight.castShadow = true;
+dirLight.shadow.camera.top = 15;
+dirLight.shadow.camera.bottom = - 15;
+dirLight.shadow.camera.left = - 15;
+dirLight.shadow.camera.right = 15;
+dirLight.shadow.camera.near = 1;
+dirLight.shadow.camera.far = 20;
+dirLight.shadow.mapSize.x = 2048;
+dirLight.shadow.mapSize.y = 2048;
+dirLight.shadow.bias = 0.01;
+scene.add(dirLight);
 
 
 let controls = new OrbitControls(camera, renderer.domElement);
@@ -58,6 +72,15 @@ const size = 1000;
 const divisions = 100;
 
 
+// const fieldGeometry = new THREE.BufferGeometry(200, 200, 200);
+// const fieldMaterial = new THREE.MeshLambertMaterial({ color: 0xaca181 });
+
+// let fieldMesh = new THREE.Mesh(fieldGeometry, fieldMaterial);
+// fieldMesh.matrixAutoUpdate = false;
+// fieldMesh.position.set(0, 20.5, 0);
+// fieldMesh.updateMatrix();
+// fieldMesh.receiveShadow = true;
+// scene.add(fieldMesh);
 
 
 function init() {
