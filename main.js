@@ -3,7 +3,7 @@ import Stats from 'three/addons/libs/stats.module.js';
 
 import { detectCollisionCubes } from './detectColisions.js';
 import { MathUtils } from 'three';
-import { Timer } from 'three/misc/Timer.js';
+
 
 import { OrbitControls } from "three/addons/controls/OrbitControls";
 
@@ -12,7 +12,8 @@ import { OrbitControls } from "three/addons/controls/OrbitControls";
 
 let stats;
 
-const timer = new Timer();
+var clock = new THREE.Clock();
+clock.autoStart = false;
 
 let mouse = new THREE.Vector2();
 const target = new THREE.Vector3();
@@ -145,7 +146,7 @@ function animate() {
 
 renderer.setAnimationLoop((_) => {
   // controls.update();
-  timer.update();
+
   animate();
   stats.update();
   renderer.render(scene, camera);
@@ -199,6 +200,7 @@ function shooting(event) {
   playerShutting = true;
   bullet.userData.x = event.movementX / screen.width;
   bullet.userData.y = event.movementY / screen.height;
+  if (!clock.running) clock.start();
 }
 
 function stopShooting() {
@@ -206,7 +208,10 @@ function stopShooting() {
 }
 
 function bulletFly() {
+  clock.getDelta();
+  console.log(clock);
   if (playerShutting) {
+
     let newBullet = bullet.clone()
     newBullet.quaternion.copy(player.quaternion);
     newBullet.position.copy(player.position);
