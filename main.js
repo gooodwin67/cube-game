@@ -3,6 +3,7 @@ import Stats from 'three/addons/libs/stats.module.js';
 
 import { detectCollisionCubes } from './detectColisions.js';
 import { MathUtils } from 'three';
+import { Timer } from 'three/misc/Timer.js';
 
 import { OrbitControls } from "three/addons/controls/OrbitControls";
 
@@ -10,6 +11,8 @@ import { OrbitControls } from "three/addons/controls/OrbitControls";
 
 
 let stats;
+
+const timer = new Timer();
 
 let mouse = new THREE.Vector2();
 const target = new THREE.Vector3();
@@ -23,6 +26,11 @@ let rotationSpeed = 5;
 
 var plane;
 let player;
+
+let bullets = [];
+let bullet;
+
+let playerShutting = false;
 
 
 let scene = new THREE.Scene();
@@ -54,21 +62,24 @@ var ambient = new THREE.AmbientLight(0xcccccc, 0.4);
 scene.add(ambient)
 
 
-const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
-dirLight.position.set(1, 10, - 1);
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+dirLight.position.set(1, 40, - 1);
 dirLight.matrixAutoUpdate = false;
 dirLight.updateMatrix();
 dirLight.castShadow = true;
-dirLight.shadow.camera.top = 15;
-dirLight.shadow.camera.bottom = - 15;
-dirLight.shadow.camera.left = - 15;
-dirLight.shadow.camera.right = 15;
+dirLight.shadow.camera.top = 150;
+dirLight.shadow.camera.bottom = - 150;
+dirLight.shadow.camera.left = - 150;
+dirLight.shadow.camera.right = 150;
 dirLight.shadow.camera.near = 1;
-dirLight.shadow.camera.far = 20;
+dirLight.shadow.camera.far = 200;
 dirLight.shadow.mapSize.x = 2048;
 dirLight.shadow.mapSize.y = 2048;
 dirLight.shadow.bias = 0.01;
 scene.add(dirLight);
+
+const helper = new THREE.DirectionalLightHelper(dirLight, 5);
+scene.add(helper);
 
 
 // let controls = new OrbitControls(camera, renderer.domElement);
@@ -86,7 +97,7 @@ scene.add(plane);
 const gridHelper = new THREE.GridHelper(fieldSize, fieldDivisions, 0x0000ff, 0x808080);
 gridHelper.position.y = 0.6;
 gridHelper.position.x = 0;
-scene.add(gridHelper);
+// scene.add(gridHelper);
 
 
 const geometryPlayer = new THREE.CylinderGeometry(0, 2, 10, 4);
@@ -105,6 +116,12 @@ player.userData.right = false;
 scene.add(player);
 
 
+const geometryBullet = new THREE.BoxGeometry(2, 0.2, 4);
+// geometryBullet.rotateX(Math.PI / 2);
+const materialBullet = new THREE.MeshPhongMaterial({ color: 0xffff00, side: THREE.DoubleSide })
+bullet = new THREE.Mesh(geometryBullet, materialBullet);
+
+
 function init() {
 
 
@@ -117,7 +134,7 @@ init();
 
 function animate() {
   movePlayer()
-
+  bulletFly()
 
 
 
@@ -127,7 +144,8 @@ function animate() {
 
 
 renderer.setAnimationLoop((_) => {
-  //controls.update();
+  // controls.update();
+  timer.update();
   animate();
   stats.update();
   renderer.render(scene, camera);
@@ -154,9 +172,13 @@ function lockStatusChange() {
 
   if (document.pointerLockElement === document.querySelector('canvas')) {
     document.addEventListener("mousemove", updateCirclePosition, false);
+    document.addEventListener("mousedown", shooting, false);
+    document.addEventListener("mouseup", stopShooting, false);
   }
   else {
     document.removeEventListener("mousemove", updateCirclePosition, false);
+    document.removeEventListener("mousedown", shooting, false);
+    document.removeEventListener("mouseup", stopShooting, false);
   }
 }
 
@@ -171,18 +193,34 @@ function updateCirclePosition(event) {
 
   movementX = MathUtils.clamp(movementX, - 1, 1);
   movementY = MathUtils.clamp(movementY, - 1, 1);
+}
 
+function shooting(event) {
+  playerShutting = true;
+  bullet.userData.x = event.movementX / screen.width;
+  bullet.userData.y = event.movementY / screen.height;
+}
 
+function stopShooting() {
+  playerShutting = false;
+}
+
+function bulletFly() {
+  if (playerShutting) {
+    let newBullet = bullet.clone()
+    newBullet.quaternion.copy(player.quaternion);
+    newBullet.position.copy(player.position);
+    scene.add(newBullet);
+    bullets.push(newBullet);
+  }
+  bullets.forEach((item, index) => {
+    var direction = new THREE.Vector3();
+    item.getWorldDirection(direction);
+    item.position.add(direction.multiplyScalar(4));
+  })
 }
 
 
-
-function onDocumentMouseDown(event) {
-  event.preventDefault();
-  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
-  //player.userData.shoot = true;
-}
 
 
 
