@@ -27,6 +27,8 @@ let rotationSpeed = 5;
 
 var plane;
 let player;
+let playerCanShoot = true;
+let playerShootSpeed = 0.15;
 
 let bullets = [];
 let bullet;
@@ -200,7 +202,9 @@ function shooting(event) {
   playerShutting = true;
   bullet.userData.x = event.movementX / screen.width;
   bullet.userData.y = event.movementY / screen.height;
-  if (!clock.running) clock.start();
+  if (!clock.running) {
+    clock.start();
+  }
 }
 
 function stopShooting() {
@@ -209,9 +213,12 @@ function stopShooting() {
 
 function bulletFly() {
   clock.getDelta();
-  console.log(clock);
-  if (playerShutting) {
-
+  if (clock.getElapsedTime() > playerShootSpeed) {
+    playerCanShoot = true;
+    clock.elapsedTime = 0;
+  }
+  if (playerShutting && playerCanShoot) {
+    playerCanShoot = false;
     let newBullet = bullet.clone()
     newBullet.quaternion.copy(player.quaternion);
     newBullet.position.copy(player.position);
