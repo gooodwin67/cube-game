@@ -4,8 +4,9 @@ import Stats from 'three/addons/libs/stats.module.js';
 import { detectCollisionCubes } from './detectColisions.js';
 import { MathUtils } from 'three';
 
-
 import { OrbitControls } from "three/addons/controls/OrbitControls";
+
+import { Player } from './player.js';
 
 
 
@@ -103,20 +104,22 @@ gridHelper.position.x = 0;
 // scene.add(gridHelper);
 
 
-const geometryPlayer = new THREE.CylinderGeometry(0, 2, 10, 4);
-geometryPlayer.rotateX(Math.PI / 2);
-const materialPlayer = new THREE.MeshPhongMaterial({ color: 0x00ff00, side: THREE.DoubleSide })
-player = new THREE.Mesh(geometryPlayer, materialPlayer);
-player.castShadow = true;
-player.position.y = 3;
+// const geometryPlayer = new THREE.CylinderGeometry(0, 2, 10, 4);
+// geometryPlayer.rotateX(Math.PI / 2);
+// const materialPlayer = new THREE.MeshPhongMaterial({ color: 0x00ff00, side: THREE.DoubleSide })
+// player = new THREE.Mesh(geometryPlayer, materialPlayer);
+// player.castShadow = true;
+// player.position.y = 3;
 
-player.userData.speed = 0.5;
-player.userData.up = false;
-player.userData.down = false;
-player.userData.left = false;
-player.userData.right = false;
+// player.userData.speed = 0.5;
+// player.userData.up = false;
+// player.userData.down = false;
+// player.userData.left = false;
+// player.userData.right = false;
 
-scene.add(player);
+player = new Player();
+
+scene.add(player.player);
 
 
 const geometryBullet = new THREE.BoxGeometry(2, 0.2, 4);
@@ -136,8 +139,9 @@ init();
 /*///////////////////////////////////////////////////////////////////*/
 
 function animate() {
-  movePlayer()
-  bulletFly()
+  player.movePlayer()
+  //bulletFly()
+
 
 
 
@@ -174,30 +178,23 @@ document.addEventListener('pointerlockchange', lockStatusChange, false);
 function lockStatusChange() {
 
   if (document.pointerLockElement === document.querySelector('canvas')) {
-    document.addEventListener("mousemove", updateCirclePosition, false);
-    document.addEventListener("mousedown", shooting, false);
-    document.addEventListener("mouseup", stopShooting, false);
+    // player.activePointerLock(true);
+    document.addEventListener("mousemove", player.updateCirclePosition.bind(player), false);
+    document.addEventListener("mousedown", player.shooting.bind(player), false);
+    // document.addEventListener("mouseup", stopShooting, false);
   }
   else {
-    document.removeEventListener("mousemove", updateCirclePosition, false);
-    document.removeEventListener("mousedown", shooting, false);
-    document.removeEventListener("mouseup", stopShooting, false);
+    // player.activePointerLock(false);
+    document.removeEventListener("mousemove", player.updateCirclePosition, false);
+    // document.removeEventListener("mousedown", shooting, false);
+    // document.removeEventListener("mouseup", stopShooting, false);
   }
 }
 
 
 
-function updateCirclePosition(event) {
-  const x = event.movementX / screen.width;
-  const y = event.movementY / screen.height;
 
-  movementX += x * rotationSpeed;
-  movementY += y * rotationSpeed;
-
-  movementX = MathUtils.clamp(movementX, - 1, 1);
-  movementY = MathUtils.clamp(movementY, - 1, 1);
-}
-
+/*
 function shooting(event) {
   playerShutting = true;
   bullet.userData.x = event.movementX / screen.width;
@@ -236,69 +233,9 @@ function bulletFly() {
 
 
 
+*/
 
 
-function movePlayer() {
-  target.set(movementX, 0, movementY).normalize();
-  target.add(player.position);
-  player.lookAt(target);
-
-  if (player.userData.up) {
-    player.position.z -= player.userData.speed;
-  }
-  if (player.userData.down) {
-    player.position.z += player.userData.speed;
-  }
-  if (player.userData.left) {
-    player.position.x -= player.userData.speed;
-  }
-  if (player.userData.right) {
-    player.position.x += player.userData.speed;
-  }
-}
 
 
-addEventListener("keydown", onkeydown, false);
-addEventListener("keyup", onkeyup, false);
 
-function onkeydown(event) {
-  switch (event.keyCode) {
-    case 38: // up
-    case 87: // w
-      player.userData.up = true;
-      break;
-    case 37: // left
-    case 65: // a
-      player.userData.left = true;
-      break;
-    case 40: // down
-    case 83: // s
-      player.userData.down = true;
-      break;
-    case 39: // right
-    case 68: // d
-      player.userData.right = true;
-      break;
-  }
-}
-
-function onkeyup(event) {
-  switch (event.keyCode) {
-    case 38: // up
-    case 87: // w
-      player.userData.up = false;
-      break;
-    case 37: // left
-    case 65: // a
-      player.userData.left = false;
-      break;
-    case 40: // down
-    case 83: // s
-      player.userData.down = false;
-      break;
-    case 39: // right
-    case 68: // d
-      player.userData.right = false;
-      break;
-  }
-}

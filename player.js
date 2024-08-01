@@ -1,257 +1,132 @@
-import { detectCollisionCubes } from './detectColisions.js';
-export const movePlayer = (THREE, scene, player, playerBox, playerFront, playerFrontBullet, bullets, bullet, camera, city) => {
-    
-	let moveDistance = 0.8; 
-  
-    player.position.x -= player.speedX;
-    player.position.z += player.speedY;
+import * as THREE from 'three';
+import { MathUtils } from 'three';
 
-    addEventListener("keydown", onkeydown, false);
-    function onkeydown(event) {
-        var keyCode = event.which;
-        if (keyCode == 87) {
-            player.userData.goTurn.goUp = true;
-        } 
-        if (keyCode == 83) {
-            player.userData.goTurn.goDown = true;
-        }
+export class Player {
+    constructor() {
+        this.geometryPlayer = new THREE.CylinderGeometry(0, 2, 10, 4);
+        this.geometryPlayer.rotateX(Math.PI / 2);
+        this.materialPlayer = new THREE.MeshPhongMaterial({ color: 0x00ff00, side: THREE.DoubleSide })
+        this.player = new THREE.Mesh(this.geometryPlayer, this.materialPlayer);
+        this.player.castShadow = true;
+        this.player.position.y = 3;
 
-        if (keyCode == 65) {
-            player.userData.goTurn.goLeft = true;
-        }
-        if (keyCode == 68) {
-            player.userData.goTurn.goRight = true;
-        }
-    };
-    addEventListener("keyup", onkeyup, false);
-    function onkeyup(event) {
-        var keyCode = event.which;
-        if (keyCode == 87) {
-            player.userData.goTurn.goUp = false;
-        } 
-        if (keyCode == 83) {
-            player.userData.goTurn.goDown = false;
-        }
+        this.target = new THREE.Vector3();
+        this.movementX = 0;
+        this.movementY = 0;
+        this.rotationSpeed = 5;
 
-        if (keyCode == 65) {
-            player.userData.goTurn.goLeft = false;
-        }
-        if (keyCode == 68) {
-            player.userData.goTurn.goRight = false;
-        }
-    };
+        this.speed = 0.5;
+        this.up = false;
+        this.down = false;
+        this.left = false;
+        this.right = false;
 
-    let anim = 'animStay';
+        this.pointerLock = false;
 
+        this.shutting = false;
 
-    if (player.userData.goTurn.goLeft && !player.userData.goTurn.goRight) {
-        player.speedX = -moveDistance;
-        //if (detectCollisionCubes(playerBox.children.filter(el => el.name == 'playerBoxLeft')[0], city.children[1])) player.speedX =0;
-        city.children.forEach(function(item, index, array) {
-            if (item.name.indexOf('building') >= 0) {
-                if (detectCollisionCubes(playerBox.children.filter(el => el.name == 'playerBoxLeft')[0], item)) {
-                    player.speedX =0;
-                };
+        addEventListener("keydown", event => {
+            switch (event.key) {
+                case 'w':
+                case 'ArrowUp':
+                    this.up = true;
+                    break;
+                case 'a':
+                case 'ArrowLeft':
+                    this.left = true;
+                    break;
+                case 's':
+                case 'ArrowDown':
+                    this.down = true;
+                    break;
+                case 'd':
+                case 'ArrowRight':
+                    this.right = true;
+                    break;
             }
         });
-
-        switch(player.userData.playerTurn) {
-            case 'top':
-                anim = 'animRight'
-                break
-            case 'down':
-                anim = 'animRight'
-                break
-            case 'left':
-                anim = 'animForward'        
-                break
-            case 'right':
-                anim = 'animForward'
-                break
-            default:
-                anim = 'animStay'     
-        } 
-    }
-    else if (player.userData.goTurn.goRight && !player.userData.goTurn.goLeft) {
-        player.speedX = moveDistance;
-        //if (detectCollisionCubes(playerBox.children.filter(el => el.name == 'playerBoxRight')[0], city.children[1])) player.speedX =0;
-        city.children.forEach(function(item, index, array) {
-            if (item.name.indexOf('building') >= 0) {
-                if (detectCollisionCubes(playerBox.children.filter(el => el.name == 'playerBoxRight')[0], item)) {
-                    player.speedX =0;
-                };
+        addEventListener("keyup", event => {
+            switch (event.key) {
+                case 'w':
+                case 'ArrowUp':
+                    this.up = false;
+                    break;
+                case 'a':
+                case 'ArrowLeft':
+                    this.left = false;
+                    break;
+                case 's':
+                case 'ArrowDown':
+                    this.down = false;
+                    break;
+                case 'd':
+                case 'ArrowRight':
+                    this.right = false;
+                    break;
             }
         });
-        switch(player.userData.playerTurn) {
-            case 'top':
-                anim = 'animRight'
-                break
-            case 'down':
-                anim = 'animRight'
-                break
-            case 'left':
-                anim = 'animForward'        
-                break
-            case 'right':
-                anim = 'animForward'
-                break
-            default:
-                anim = 'animStay'     
-        } 
-        
-    }
-    if (!player.userData.goTurn.goLeft && !player.userData.goTurn.goRight) {
-        player.speedX = 0;
     }
 
+    // activePointerLock(toggle) {
+    //     if (toggle) {
+    //         if (!this.pointerLock)
+    //             document.addEventListener("mousemove", this.updateCirclePosition.bind(this), false)
+    //         this.pointerLock = true;
+    //         document.addEventListener("mousedown", this.shooting, false);
+    //         document.addEventListener("mouseup", this.stopShooting, false);
+    //     }
+    //     else {
+    //         document.removeEventListener("mousemove", this.updateCirclePosition, false);
+    //         document.removeEventListener("mousedown", this.shooting, false);
+    //         document.removeEventListener("mouseup", this.stopShooting, false);
+    //         this.pointerLock = false;
+    //     }
+    // }
 
-    
-    if (player.userData.goTurn.goDown && !player.userData.goTurn.goUp) {
-        player.speedY = -moveDistance;
-        //if (detectCollisionCubes(playerBox.children.filter(el => el.name == 'playerBoxBottom')[0], city.children[1])) player.speedY =0;
-        city.children.forEach(function(item, index, array) {
-            if (item.name.indexOf('building') >= 0) {
-                if (detectCollisionCubes(playerBox.children.filter(el => el.name == 'playerBoxBottom')[0], item)) {
-                    player.speedY =0;
-                };
-            }
-        });
-        switch(player.userData.playerTurn) {
-            case 'top':
-                anim = 'animForward'
-                break
-            case 'down':
-                anim = 'animForward'
-                break
-            case 'left':
-                anim = 'animRight'        
-                break
-            case 'right':
-                anim = 'animRight'
-                break
-            default:
-                anim = 'animStay'     
-        } 
-        
-    }
-    else if (player.userData.goTurn.goUp && !player.userData.goTurn.goDown) {
-        player.speedY = moveDistance;
-        //if (detectCollisionCubes(playerBox.children.filter(el => el.name == 'playerBoxTop')[0], city.children[1])) player.speedY =0;
-        city.children.forEach(function(item, index, array) {
-            if (item.name.indexOf('building') >= 0) {
-                if (detectCollisionCubes(playerBox.children.filter(el => el.name == 'playerBoxTop')[0], item)) {
-                    player.speedY =0;
-                };
-            }
-        });
-        switch(player.userData.playerTurn) {
-            case 'top':
-                anim = 'animForward'
-                break
-            case 'down':
-                anim = 'animForward'
-                break
-            case 'left':
-                anim = 'animRight'        
-                break
-            case 'right':
-                anim = 'animRight'
-                break
-            default:
-                anim = 'animStay'     
-        } 
-        
-    }
-    if (!player.userData.goTurn.goUp && !player.userData.goTurn.goDown) {
-        player.speedY = 0;
-        
+    movePlayer() {
+        this.target.set(this.movementX, 0, this.movementY).normalize();
+        this.target.add(this.player.position);
+        this.player.lookAt(this.target);
+        if (this.up) {
+            this.player.position.z -= this.speed;
+        }
+        if (this.down) {
+            this.player.position.z += this.speed;
+        }
+        if (this.left) {
+            this.player.position.x -= this.speed;
+        }
+        if (this.right) {
+            this.player.position.x += this.speed;
+        }
     }
 
-    if (!player.userData.goTurn.goLeft && !player.userData.goTurn.goRight && !player.userData.goTurn.goUp && !player.userData.goTurn.goDown) {
-        
+    updateCirclePosition(event) {
+
+        const x = event.movementX / screen.width;
+        const y = event.movementY / screen.height;
+
+
+        this.movementX += x * this.rotationSpeed;
+        this.movementY += y * this.rotationSpeed;
+
+
+        // this.movementX = MathUtils.clamp(this.movementX, - 1, 1);
+        // this.movementY = MathUtils.clamp(this.movementY, - 1, 1);
+
     }
-    
-
-    
-    if (anim == 'animForward') {
-        player.userData.animations.actionStay.stop();
-        player.userData.animations.actionRunForward.play();
-
-        //player.userData.animations.actionRunForward.reset().crossFadeFrom(player.userData.animations.actionStay, 1).play();
-    }
-    else if (anim == 'animRight') {
-        player.userData.animations.actionRunRight.play();
-        player.userData.animations.actionStay.stop();
-     
-    }
-    else if (anim == 'animStay') {
-        player.userData.animations.actionRunForward.stop();
-        player.userData.animations.actionRunRight.stop();
-        player.userData.animations.actionStay.play();
-    }
-
-
-
-    camera.position.x = player.position.x;
-    camera.position.z = player.position.z-10;
-
-    /*///////////////////////////////////////////////////////////////////////////////////////*/
-
-    
-    
-
-    if (player.userData.shoot) {
-        console.log('shoot')
-        
-        let bulletClone = bullet.clone();
-        
-        bulletClone.position.set(player.position.x, 2, player.position.z)
-        bulletClone.userData.vec = new THREE.Vector3();
-        bulletClone.userData.vec.setFromMatrixPosition(playerFrontBullet.matrixWorld);
-        bulletClone.userData.vec = new THREE.Vector3(bulletClone.userData.vec.x, bulletClone.userData.vec.y, bulletClone.userData.vec.z);
-
-        scene.add( bulletClone );
-        bullets.push(bulletClone);
-
-
-        
-        
-
-        
-        //console.log(bullets);
-
-
-        player.userData.shoot = false;
-
-        
+    shooting(event) {
+        this.shutting = true;
+        // bullet.userData.x = event.movementX / screen.width;
+        // bullet.userData.y = event.movementY / screen.height;
+        // if (!clock.running) {
+        //     clock.start();
+        // }
+        console.log(this.shutting);
     }
 
-    if (bullets.length>0) {
-        bullets.forEach((item, index) => {
-            item.position.add(item.userData.vec.clone().sub(item.position).normalize().multiplyScalar(5));
-            if (item.position.distanceTo(item.userData.vec)<5) {
-                scene.remove(item);
-                bullets.splice(index, 1);
-            }
-            city.children.filter(el => el.name.indexOf('building') >= 0).forEach((itemB)=>{
-                if (detectCollisionCubes(itemB, item)) {
-                    scene.remove(item);
-                    bullets.splice(index, 1);
-                };    
-            })
-            
+    stopShooting() {
 
-            
-        })
-        
+        // playerShutting = false;
     }
-
-
-    
-    
-    
-
 }
-
-
-
