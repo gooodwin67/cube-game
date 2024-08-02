@@ -2,8 +2,11 @@ import * as THREE from 'three';
 import { MathUtils } from 'three';
 
 export class Player {
-    constructor() {
-        this.geometryPlayer = new THREE.CylinderGeometry(0, 2, 10, 4);
+    constructor(scene, world) {
+        this.scene = scene;
+        this.world = world;
+        this.playerSize = 10;
+        this.geometryPlayer = new THREE.CylinderGeometry(0, 2, this.playerSize, 4);
         this.geometryPlayer.rotateX(Math.PI / 2);
         this.materialPlayer = new THREE.MeshPhongMaterial({ color: 0x00ff00, side: THREE.DoubleSide })
         this.player = new THREE.Mesh(this.geometryPlayer, this.materialPlayer);
@@ -24,22 +27,37 @@ export class Player {
         this.pointerLock = false;
 
         this.shutting = false;
+        this.bullets = [];
+        this.bullet = new THREE.Mesh(new THREE.BoxGeometry(2, 0.2, 4), new THREE.MeshPhongMaterial({ color: 0xff0000, side: THREE.DoubleSide }));
+        this.playerCanShoot = true;
+        this.playerShootSpeed = 0.1;
+
+        this.clock = new THREE.Clock();
+        this.clock.autoStart = false;
+
+        this.audios = new Map();
+
+
 
         addEventListener("keydown", event => {
             switch (event.key) {
                 case 'w':
+                case 'ц':
                 case 'ArrowUp':
                     this.up = true;
                     break;
                 case 'a':
+                case 'ф':
                 case 'ArrowLeft':
                     this.left = true;
                     break;
                 case 's':
+                case 'ы':
                 case 'ArrowDown':
                     this.down = true;
                     break;
                 case 'd':
+                case 'в':
                 case 'ArrowRight':
                     this.right = true;
                     break;
@@ -48,18 +66,22 @@ export class Player {
         addEventListener("keyup", event => {
             switch (event.key) {
                 case 'w':
+                case 'ц':
                 case 'ArrowUp':
                     this.up = false;
                     break;
                 case 'a':
+                case 'ф':
                 case 'ArrowLeft':
                     this.left = false;
                     break;
                 case 's':
+                case 'ы':
                 case 'ArrowDown':
                     this.down = false;
                     break;
                 case 'd':
+                case 'в':
                 case 'ArrowRight':
                     this.right = false;
                     break;
@@ -67,36 +89,22 @@ export class Player {
         });
     }
 
-    // activePointerLock(toggle) {
-    //     if (toggle) {
-    //         if (!this.pointerLock)
-    //             document.addEventListener("mousemove", this.updateCirclePosition.bind(this), false)
-    //         this.pointerLock = true;
-    //         document.addEventListener("mousedown", this.shooting, false);
-    //         document.addEventListener("mouseup", this.stopShooting, false);
-    //     }
-    //     else {
-    //         document.removeEventListener("mousemove", this.updateCirclePosition, false);
-    //         document.removeEventListener("mousedown", this.shooting, false);
-    //         document.removeEventListener("mouseup", this.stopShooting, false);
-    //         this.pointerLock = false;
-    //     }
-    // }
 
     movePlayer() {
+        this.bulletFly();
         this.target.set(this.movementX, 0, this.movementY).normalize();
         this.target.add(this.player.position);
         this.player.lookAt(this.target);
-        if (this.up) {
+        if (this.up && this.player.position.z > -this.world.fieldSize / 2 + this.playerSize / 2) {
             this.player.position.z -= this.speed;
         }
-        if (this.down) {
+        if (this.down && this.player.position.z < this.world.fieldSize / 2 - this.playerSize / 2) {
             this.player.position.z += this.speed;
         }
-        if (this.left) {
+        if (this.left && this.player.position.x > -this.world.fieldSize / 2 + this.playerSize / 2) {
             this.player.position.x -= this.speed;
         }
-        if (this.right) {
+        if (this.right && this.player.position.x < this.world.fieldSize / 2 - this.playerSize / 2) {
             this.player.position.x += this.speed;
         }
     }
@@ -117,16 +125,44 @@ export class Player {
     }
     shooting(event) {
         this.shutting = true;
-        // bullet.userData.x = event.movementX / screen.width;
-        // bullet.userData.y = event.movementY / screen.height;
-        // if (!clock.running) {
-        //     clock.start();
-        // }
-        console.log(this.shutting);
+        this.bullet.userData.x = event.movementX / screen.width;
+        this.bullet.userData.y = event.movementY / screen.height;
+        if (!this.clock.running) {
+            this.clock.start();
+        }
     }
 
     stopShooting() {
+        this.shutting = false;
 
-        // playerShutting = false;
+    }
+
+    bulletFly() {
+
+        this.clock.getDelta();
+        if (this.clock.getElapsedTime() > this.playerShootSpeed) {
+            this.playerCanShoot = true;
+            this.clock.elapsedTime = 0;
+        }
+        if (this.shutting && this.playerCanShoot) {
+            this.playerCanShoot = false;
+            let newBullet = this.bullet.clone()
+            newBullet.quaternion.copy(this.player.quaternion);
+            newBullet.position.copy(this.player.position);
+            this.scene.add(newBullet);
+            this.bullets.push(newBullet);
+
+            const audio = this.audios.get('playerShot');
+            this.world.playAudio(audio);
+        }
+        this.bullets.forEach((item, index) => {
+            var direction = new THREE.Vector3();
+            item.getWorldDirection(direction);
+            item.position.add(direction.multiplyScalar(4));
+            if (item.position.x > this.world.fieldSize / 2 || item.position.x < -this.world.fieldSize / 2 || item.position.z > this.world.fieldSize / 2 || item.position.z < -this.world.fieldSize / 2) {
+                this.bullets.splice(this.bullets.indexOf(item), 1);
+                this.scene.remove(item);
+            }
+        })
     }
 }
