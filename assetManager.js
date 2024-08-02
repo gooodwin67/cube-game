@@ -10,23 +10,14 @@ export class AssetManager {
     }
 
     init() {
-
         this._loadAudios();
-
         const loadingManager = this.loadingManager;
-
         return new Promise((resolve) => {
-
             loadingManager.onLoad = () => {
-
                 setTimeout(() => {
-
                     resolve();
-
                 }, 100);
-
             };
-
         });
 
     }
