@@ -45,7 +45,7 @@ export class AssetManager {
 
         const playerShot = new THREE.PositionalAudio(listener);
         playerShot.setRefDistance(refDistance);
-        playerShot.setVolume(5.5);
+        playerShot.setVolume(3.5);
 
 
         audioLoader.load('./assets/audio/playerShot.ogg', buffer => playerShot.setBuffer(buffer));

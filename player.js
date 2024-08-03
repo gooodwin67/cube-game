@@ -5,7 +5,7 @@ export class Player {
     constructor(scene, world) {
         this.scene = scene;
         this.world = world;
-        this.playerSize = 10;
+        this.playerSize = this.world.divSize;
         this.geometryPlayer = new THREE.CylinderGeometry(0, 2, this.playerSize, 4);
         this.geometryPlayer.rotateX(Math.PI / 2);
         this.materialPlayer = new THREE.MeshPhongMaterial({ color: 0x00ff00, side: THREE.DoubleSide })
@@ -16,7 +16,7 @@ export class Player {
         this.target = new THREE.Vector3();
         this.movementX = 0;
         this.movementY = 0;
-        this.rotationSpeed = 5;
+        this.rotationSpeed = 1;
 
         this.speed = 0.5;
         this.up = false;
@@ -108,6 +108,7 @@ export class Player {
             this.player.position.x += this.speed;
         }
     }
+
 
     updateCirclePosition(event) {
 

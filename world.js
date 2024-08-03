@@ -7,7 +7,7 @@ export class World {
     constructor() {
         this.fieldSize = 110;
         this.fieldDivisions = 11;
-
+        this.divSize = this.fieldSize / this.fieldDivisions;
         this.stats = new Stats();
 
         this.camera = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 1, 1000);
@@ -42,6 +42,8 @@ export class World {
         this.renderer.gammaInput = true;
 
         this.pointerlock = false;
+
+        this.wallsMas = [];
 
 
     }

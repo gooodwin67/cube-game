@@ -3,36 +3,71 @@ import * as THREE from 'three';
 import { detectCollisionCubes } from './detectColisions.js';
 import { OrbitControls } from "three/addons/controls/OrbitControls";
 
+
 import { Player } from './player.js';
 import { World } from './world.js';
-import { Level } from './level.js';
+import { Level, Levels } from './level.js';
+import { Enemies } from './enemies.js';
 
 
 
 let scene = new THREE.Scene();
+//scene.fog = new THREE.FogExp2(0xefd1b5, 0.0025);
+scene.fog = new THREE.Fog(0xefd1b5, 0.0025);
+scene.background = new THREE.Color(0x050505);
 let world = new World();
 
 document.body.appendChild(world.renderer.domElement);
 document.body.appendChild(world.stats.dom);
 
-scene.add(world.ambient)
-scene.add(world.helper);
-scene.add(world.dirLight);
+//scene.add(world.ambient)
+//scene.add(world.helper);
+//scene.add(world.dirLight);
 
-// let controls = new OrbitControls(world.camera, world.renderer.domElement);
-// controls.enableDamping = true;
-// controls.target.set(0, 0, 0);
+const light1 = new THREE.SpotLight(0xffffff, 10000);
+light1.position.set(2, 140, 10);
+light1.angle = 0.5;
+light1.penumbra = 0.5;
+
+light1.castShadow = true;
+light1.shadow.mapSize.width = 1024;
+light1.shadow.mapSize.height = 1024;
+
+// scene.add( new THREE.CameraHelper( light1.shadow.camera ) );
+scene.add(light1);
+
+// const light2 = new THREE.SpotLight(0xffffff, 150);
+// light2.position.set(- 1, 3.5, 3.5);
+// light2.angle = 0.5;
+// light2.penumbra = 0.5;
+
+// light2.castShadow = true;
+// light2.shadow.mapSize.width = 1024;
+// light2.shadow.mapSize.height = 1024;
+
+// // scene.add( new THREE.CameraHelper( light2.shadow.camera ) );
+// scene.add(light2);
+
+let controls = new OrbitControls(world.camera, world.renderer.domElement);
+controls.enableDamping = true;
+controls.target.set(0, 0, 0);
 
 
 let level = new Level(world);
 let player = new Player(scene, world);
+let levels = new Levels();
+let enemies = new Enemies(scene, world, levels, player);
 
 
 function init() {
   world.init(player);
   scene.add(level.plane);
-  scene.add(level.gridHelper);
+  scene.add(level.groupWall);
+  //scene.add(level.gridHelper);
   scene.add(player.player);
+  levels.initLevel(1);
+  //console.log(levels.enemiesMas);
+  enemies.initEnemies();
 
 };
 
@@ -41,7 +76,11 @@ init();
 /*///////////////////////////////////////////////////////////////////*/
 
 function animate() {
-  if (world.pointerlock) player.movePlayer();
+  if (world.pointerlock) {
+    player.movePlayer();
+
+  }
+  enemies.enemyMove();
 
 };
 
@@ -49,7 +88,7 @@ function animate() {
 
 
 world.renderer.setAnimationLoop((_) => {
-  // controls.update();
+  controls.update();
 
   animate();
   world.stats.update();
