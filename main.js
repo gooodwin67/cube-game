@@ -9,6 +9,8 @@ import { World } from './world.js';
 import { Level, Levels } from './level.js';
 import { Enemies } from './enemies.js';
 
+import { getParticleSystem } from "./getParticleSystem.js";
+
 
 
 let scene = new THREE.Scene();
@@ -53,10 +55,31 @@ controls.enableDamping = true;
 controls.target.set(0, 0, 0);
 
 
+
 let level = new Level(world);
 let player = new Player(scene, world);
 let levels = new Levels();
 let enemies = new Enemies(scene, world, levels, player);
+let camera = world.camera;
+
+
+let playerParticleSystem = getParticleSystem({
+  camera: camera,
+  emitter: player.player,
+  parent: scene,
+  rate: 15,
+  texture: "assets/smoke.png",
+  maxSize: 5.0,
+  radius: 2,
+  maxLife: 0.7,
+  color: new THREE.Color(0xffffff),
+});
+
+
+
+
+
+
 
 
 function init() {
@@ -76,11 +99,13 @@ init();
 /*///////////////////////////////////////////////////////////////////*/
 
 function animate() {
+  playerParticleSystem.update(0.016);
   if (world.pointerlock) {
     player.movePlayer();
-
   }
   enemies.enemyMove();
+
+
 
 };
 

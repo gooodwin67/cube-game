@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { MathUtils } from 'three';
+import { getParticleSystem } from "./getParticleSystem.js";
 
 export class Player {
     constructor(scene, world) {
@@ -31,11 +32,14 @@ export class Player {
         this.bullet = new THREE.Mesh(new THREE.BoxGeometry(2, 0.2, 4), new THREE.MeshPhongMaterial({ color: 0xff0000, side: THREE.DoubleSide }));
         this.playerCanShoot = true;
         this.playerShootSpeed = 0.1;
+        this.bulletSpeed = 4;
 
         this.clock = new THREE.Clock();
         this.clock.autoStart = false;
 
         this.audios = new Map();
+
+
 
 
 
@@ -147,7 +151,21 @@ export class Player {
         }
         if (this.shutting && this.playerCanShoot) {
             this.playerCanShoot = false;
-            let newBullet = this.bullet.clone()
+            let newBullet = this.bullet.clone();
+            newBullet.dead = false;
+
+            newBullet.bulletParticleSystem = getParticleSystem({
+                camera: this.world.camera,
+                emitter: newBullet,
+                parent: this.scene,
+                rate: 50,
+                texture: "assets/smoke.png",
+                maxSize: 3.0,
+                radius: 1,
+                maxLife: 0.1,
+                color: new THREE.Color(0xffff00),
+            });
+
             newBullet.quaternion.copy(this.player.quaternion);
             newBullet.position.copy(this.player.position);
             this.scene.add(newBullet);
@@ -159,10 +177,13 @@ export class Player {
         this.bullets.forEach((item, index) => {
             var direction = new THREE.Vector3();
             item.getWorldDirection(direction);
-            item.position.add(direction.multiplyScalar(4));
+            item.position.add(direction.multiplyScalar(this.bulletSpeed));
+
             if (item.position.x > this.world.fieldSize / 2 || item.position.x < -this.world.fieldSize / 2 || item.position.z > this.world.fieldSize / 2 || item.position.z < -this.world.fieldSize / 2) {
+                item.dead = true;
                 this.bullets.splice(this.bullets.indexOf(item), 1);
                 this.scene.remove(item);
+
             }
         })
     }
