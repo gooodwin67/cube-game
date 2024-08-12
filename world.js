@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import Stats from 'three/addons/libs/stats.module.js';
 import { AssetManager } from './assetManager.js';
-import { Player } from './player.js';
 
 export class World {
     constructor() {
@@ -11,7 +10,7 @@ export class World {
         this.stats = new Stats();
 
         this.camera = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 1, 1000);
-        this.camera.position.set(0, 160, 180);
+        this.camera.position.set(0, 160, 150);
         this.camera.lookAt(0, 0, 0);
 
         this.ambient = new THREE.AmbientLight(0xcccccc, 0.4);

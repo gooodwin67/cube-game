@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { MathUtils } from 'three';
 import { getParticleSystem } from "./getParticleSystem.js";
+import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 
 export class Player {
     constructor(scene, world) {
@@ -13,6 +15,9 @@ export class Player {
         this.player = new THREE.Mesh(this.geometryPlayer, this.materialPlayer);
         this.player.castShadow = true;
         this.player.position.y = 3;
+        this.player.position.z = this.world.fieldSize / 2 - this.playerSize;
+        this.player.lifes = 3;
+        this.player.dead = false;
 
         this.target = new THREE.Vector3();
         this.movementX = 0;
@@ -38,6 +43,8 @@ export class Player {
         this.clock.autoStart = false;
 
         this.audios = new Map();
+
+
 
 
 
@@ -93,6 +100,18 @@ export class Player {
         });
     }
 
+
+
+    hitPlayer() {
+        if (this.player.lifes > 1) {
+            this.player.lifes--
+        }
+        else this.deadPlayer();
+    }
+    deadPlayer() {
+        console.log('dead');
+        this.player.dead = true;
+    }
 
     movePlayer() {
         this.bulletFly();

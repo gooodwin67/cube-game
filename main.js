@@ -83,6 +83,7 @@ let playerParticleSystem = getParticleSystem({
 
 
 function init() {
+
   world.init(player);
   scene.add(level.plane);
   scene.add(level.groupWall);
@@ -99,11 +100,12 @@ init();
 /*///////////////////////////////////////////////////////////////////*/
 
 function animate() {
-  playerParticleSystem.update(0.016);
-  if (world.pointerlock) {
+  if (world.pointerlock && !player.player.dead) {
     player.movePlayer();
+    playerParticleSystem.update(0.016);
+    enemies.enemyMove();
   }
-  enemies.enemyMove();
+
 
 
 
