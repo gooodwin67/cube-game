@@ -19,7 +19,7 @@ export class Enemies {
 
     initEnemies() {
         this.levels.enemiesInLevelMas.forEach((value, index, array) => {
-            if (value.type == 'w') { // wall
+            if (value.type.name == 'w') { // wall
                 let enemyWidth = this.world.divSize;
                 let enemyheight = this.world.divSize;
                 let geometryEnemy = new THREE.BoxGeometry(enemyWidth, 5, enemyheight);
@@ -27,9 +27,10 @@ export class Enemies {
                 let newEnemy = new THREE.Mesh(geometryEnemy, materialEnemy);
                 newEnemy.receiveShadow = true;
                 newEnemy.position.set(-this.world.fieldSize / 2 + this.world.divSize * value.y + enemyWidth / 2, 5, -this.world.fieldSize / 2 + this.world.divSize * value.x + enemyheight / 2);
+                this.world.wallsMas.push(newEnemy)
                 this.scene.add(newEnemy);
             }
-            if (value.type == 'b') {
+            if (value.type.name == 'b') {
                 let enemyWidth = this.world.divSize;
                 let enemyheight = this.world.divSize;
                 let geometryEnemy = new THREE.BoxGeometry(enemyWidth, 4, enemyheight);
@@ -39,6 +40,7 @@ export class Enemies {
                 newEnemy.position.set(-this.world.fieldSize / 2 + this.world.divSize * value.y + enemyWidth / 2, 4, -this.world.fieldSize / 2 + this.world.divSize * value.x + enemyheight / 2);
                 newEnemy.userData.name = 'b';
                 newEnemy.userData.lives = 15;
+                newEnemy.userData.col = value.col;
                 newEnemy.userData.directionX = 0.8;
                 newEnemy.userData.directionY = 0;
 
